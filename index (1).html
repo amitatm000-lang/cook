@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Staff Attendance</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f9fafc;
+    padding: 20px;
+    text-align: center;
+  }
+  h1 {
+    color: #007bff;
+  }
+  input, button {
+    padding: 8px;
+    margin: 5px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+  }
+  button {
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #0056b3;
+  }
+  table {
+    width: 95%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+  }
+  th {
+    background-color: #007bff;
+    color: white;
+  }
+  td {
+    cursor: pointer;
+  }
+  td:hover {
+    background-color: #e7f0ff;
+  }
+</style>
+</head>
+<body>
+
+<h1>Staff Attendance Tracker</h1>
+
+<div>
+  <input type="text" id="nameInput" placeholder="Enter member name" />
+  <button onclick="addMember()">Add Member</button>
+</div>
+
+<div>
+  <input type="date" id="dateInput" />
+  <button onclick="addDate()">Add Date</button>
+</div>
+
+<table id="attendanceTable">
+  <thead>
+    <tr id="headerRow">
+      <th>Name</th>
+    </tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
+</table>
+
+<script>
+let attendance = JSON.parse(localStorage.getItem('attendanceSite')) || { members: [], dates: [] };
+
+function render() {
+  const header = document.getElementById('headerRow');
+  const body = document.getElementById('tableBody');
+  header.innerHTML = '<th>Name</th>';
+  attendance.dates.forEach(date => header.innerHTML += `<th>${date}</th>`);
+  body.innerHTML = '';
+
+  attendance.members.forEach((m, i) => {
+    let row = `<tr><td>${m.name}</td>`;
+    attendance.dates.forEach(date => {
+      let status = m.records[date] || '';
+      row += `<td onclick="toggleStatus(${i}, '${date}')">${status}</td>`;
+    });
+    row += '</tr>';
+    body.innerHTML += row;
+  });
+
+  localStorage.setItem('attendanceSite', JSON.stringify(attendance));
+}
+
+function addMember() {
+  const name = document.getElementById('nameInput').value.trim();
+  if (!name) return alert('Enter a name');
+  if (attendance.members.some(m => m.name === name)) return alert('Member already exists!');
+  attendance.members.push({ name, records: {} });
+  document.getElementById('nameInput').value = '';
+  render();
+}
+
+function addDate() {
+  const dateInput = document.getElementById('dateInput').value;
+  if (!dateInput) return alert('Select a date');
+  if (attendance.dates.includes(dateInput)) return alert('Date already added!');
+  attendance.dates.push(dateInput);
+  render();
+}
+
+function toggleStatus(memberIndex, date) {
+  const record = attendance.members[memberIndex].records;
+  record[date] = record[date] === 'Day' ? 'Night' : record[date] === 'Night' ? '' : 'Day';
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>
